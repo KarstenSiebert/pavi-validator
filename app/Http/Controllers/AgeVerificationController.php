@@ -94,6 +94,7 @@ class AgeVerificationController extends Controller
             'user' => 'nullable|string|max:255',            
             'mina' => 'nullable|integer|between:14,21',
             'vurl' => 'nullable|url:https',
+            'nonce' => 'nullable|string|max:255',
             'proof' => 'required|array',
             'proof.proof' => 'required|array',        
             'proof.publicSignals' => 'required|array'
@@ -102,6 +103,8 @@ class AgeVerificationController extends Controller
         $user = $request->input('user') ?? null;
         $vurl = $request->input('vurl') ?? null;
         $mina = $request->input('mina') ?? null;
+
+        $nonce = $request->input('nonce') ?? null;
                         
         $sumProof = $request->input('proof');
 
@@ -166,8 +169,9 @@ class AgeVerificationController extends Controller
             // none is used to avoid spoofing and middle men during app-to-app communication on mobiles
             // none gets signed and verified by the user app using the public kex of the validator
             $data = [
-                'show' => $display,
-                'none' => $user
+                'user'  => $user,
+                'show'  => $display,                
+                'nonce' => $nonce
             ];
                 
             $json = json_encode($data, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE);
