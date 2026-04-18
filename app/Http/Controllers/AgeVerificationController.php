@@ -31,7 +31,7 @@ class AgeVerificationController extends Controller
       
         // The client has 3 minutes for its calculations before we timeout (can be increased if required)
 
-        $link = URL::temporarySignedRoute('api.age.verify', now()->addMinutes(3));
+        $link = URL::temporarySignedRoute('api.age.verify', now()->addMinutes(5));
              
         $secretKey = base64_decode(env('CREDENTIALS_SECRET_KEY'));
         $publicKey = base64_decode(env('CREDENTIALS_PUBLIC_KEY'));
