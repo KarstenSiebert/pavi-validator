@@ -8,6 +8,7 @@ use App\Jobs\UserVerificationInfo;
 use Illuminate\Support\Facades\URL;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Storage;
 
 class AgeVerificationController extends Controller
 {    
@@ -93,7 +94,7 @@ class AgeVerificationController extends Controller
         $request->validate([
             'user' => 'nullable|string|max:255',            
             'mina' => 'nullable|integer|between:14,21',
-            'vurl' => 'nullable|url:https',
+            'vurl' => 'nullable|string|max:255',
             'nonce' => 'nullable|string|max:255',
             'proof' => 'required|array',
             'proof.proof' => 'required|array',        
@@ -155,12 +156,6 @@ class AgeVerificationController extends Controller
                 $display = $vage ? 'true' : 'false';
             }
 
-            // Send result to requesting server (vurl), provider server makes further decisions!
-            // vurl has been provided by server to app via QR code
-            if (($vurl != null) && ($user != null) && ($uuid != null)) {
-                UserVerificationInfo::dispatchSync($vurl, $user, $uuid, $display);
-            }
-                    
             $secretKey = base64_decode(env('CREDENTIALS_SECRET_KEY'));
             $publicKey = base64_decode(env('CREDENTIALS_PUBLIC_KEY'));
 
@@ -186,7 +181,17 @@ class AgeVerificationController extends Controller
             $credentials['field'] = base64_encode($json);
 
             $creds = base64_encode(json_encode($credentials));
-        
+
+            // Take vurl from provider registry (user) in main system database
+
+            if ($vurl != null) {
+                $vurl = $this->geturl($vurl, $nonce);
+            }
+            
+            if (($vurl != null) && ($uuid != null) && ($creds != null)) {
+                UserVerificationInfo::dispatchSync($vurl, $user, $uuid, $creds);
+            }
+                         
             return response()->json(['valid' => $display, 'creds' => $creds]);
         }
 
@@ -214,17 +219,42 @@ class AgeVerificationController extends Controller
         if ($request->input('member') && $request->input('lindex')) {
             
             $addr = [];
-            $path = storage_path('app/private/merkle_leaf.json');
 
             $addr['member'] = $request->input('member');
             $addr['lindex'] = $request->input('lindex');
 
-            file_put_contents($path, json_encode($addr, JSON_PRETTY_PRINT |  JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES));
+            Storage::disk('local')->put('merkle_leaf.json', json_encode($addr, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT));
 
             return response()->json([['message' => 'ok']]);
         }
         
         return response()->json(['message' => 'Webhook test']);
+    }
+
+    private function geturl(string $uuid, ?string $nonce = ''): ?string
+    {   
+        if ($uuid == null) return null;
+            
+        try {
+            $response = Http::retry(3, 200)
+                ->timeout(10)
+                ->asJson()
+                ->post('https://join.siehog.com/api/geturl', [
+                'uuid' => $uuid,
+                'nonce' => $nonce
+            ]);
+
+            if ($response->successful()) {
+                $result = $response->json();
+
+                return $result['webhook'] ?? null;
+            }            
+                
+        } catch (\Exception $e) {
+                 
+        }
+        
+        return null;
     }
 
 }

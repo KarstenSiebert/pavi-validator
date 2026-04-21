@@ -13,20 +13,20 @@ class UserVerificationInfo implements ShouldQueue
 {
     use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
 
-    private $userDetails;
-    private $providerUrl;
-    private $issuersUUID;
-    private $statusMessg;
+    private string $vurl;
+    private string $user;
+    private string $uuid;
+    private string $creds;
 
     /**
      * Create a new job instance.
      */
-    public function __construct($providerUrl, $userDetails, $issuersUUID, $statusMessg)
+    public function __construct(string $vurl, string $user, string $uuid, string $creds)
     {
-        $this->providerUrl = $providerUrl;
-        $this->userDetails = $userDetails;
-        $this->issuersUUID = $issuersUUID;
-        $this->statusMessg = $statusMessg;
+        $this->vurl  = $vurl;
+        $this->user  = $user;
+        $this->uuid  = $uuid;
+        $this->creds = $creds;
     }
 
     /**
@@ -38,10 +38,10 @@ class UserVerificationInfo implements ShouldQueue
             Http::retry(3, 200)
                 ->timeout(10)
                 ->asJson()
-                ->post($this->providerUrl, [
-                    "userid" => $this->userDetails,
-                    "issuer" => $this->issuersUUID,
-                    "status" => $this->statusMessg
+                ->post($this->vurl, [
+                    "user"   => $this->user,
+                    "issuer" => $this->uuid,                    
+                    "creds"  => $this->creds
                 ]);
 
         } catch (\Exception $e) {            
