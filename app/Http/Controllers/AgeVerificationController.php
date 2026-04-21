@@ -95,6 +95,7 @@ class AgeVerificationController extends Controller
             'user' => 'nullable|string|max:255',            
             'mina' => 'nullable|integer|between:14,21',
             'vurl' => 'nullable|string|max:255',
+            'code' => 'nullable|string|max:255',
             'nonce' => 'nullable|string|max:255',
             'proof' => 'required|array',
             'proof.proof' => 'required|array',        
@@ -103,6 +104,7 @@ class AgeVerificationController extends Controller
         
         $user = $request->input('user') ?? null;
         $vurl = $request->input('vurl') ?? null;
+        $code = $request->input('code') ?? null;
         $mina = $request->input('mina') ?? null;
 
         $nonce = $request->input('nonce') ?? null;
@@ -165,6 +167,7 @@ class AgeVerificationController extends Controller
             // none gets signed and verified by the user app using the public kex of the validator
             $data = [
                 'user'  => $user,
+                'code'  => $code,
                 'show'  => $display,                
                 'nonce' => $nonce
             ];
