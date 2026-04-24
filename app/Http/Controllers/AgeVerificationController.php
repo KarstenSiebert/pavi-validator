@@ -127,14 +127,20 @@ class AgeVerificationController extends Controller
 
             // Our Circuit has multiple outputs
 
-            if ($publicSignals[3] == "1") {            
+            if ($publicSignals[5] == "1") {
                 $verifiedAge = 21;
-
-            } elseif ($publicSignals[2] == "1") {
+                
+            } elseif ($publicSignals[4] == "1") {
                 $verifiedAge = 18;
 
-            } elseif ($publicSignals[1] == "1") {
+            } elseif ($publicSignals[3] == "1") {
+                $verifiedAge = 17;
+
+            } elseif ($publicSignals[2] == "1") {
                 $verifiedAge = 16;
+
+            } elseif ($publicSignals[1] == "1") {
+                $verifiedAge = 15;
 
             } elseif ($publicSignals[0] == "1") {
                 $verifiedAge = 14;                            
