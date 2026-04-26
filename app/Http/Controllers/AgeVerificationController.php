@@ -92,20 +92,18 @@ class AgeVerificationController extends Controller
         $uuid = $request->header('X-Age-Verification') ?? null;        
 
         $request->validate([
-            'user' => 'nullable|string|max:255',            
-            'mina' => 'nullable|integer|between:14,21',
+            'user' => 'nullable|string|max:255',
             'vurl' => 'nullable|string|max:255',
             'code' => 'nullable|string|max:255',
             'nonce' => 'nullable|string|max:255',
             'proof' => 'required|array',
-            'proof.proof' => 'required|array',        
+            'proof.proof' => 'required|array',
             'proof.publicSignals' => 'required|array'
         ]);
         
         $user = $request->input('user') ?? null;
         $vurl = $request->input('vurl') ?? null;
         $code = $request->input('code') ?? null;
-        $mina = $request->input('mina') ?? null;
 
         $nonce = $request->input('nonce') ?? null;
                         
@@ -122,47 +120,8 @@ class AgeVerificationController extends Controller
         if ($proofValid) {
  
             $display = "not verified";
-
-            $verifiedAge = 0;
-
-            // Our Circuit has multiple outputs
-
-            if ($publicSignals[5] == "1") {
-                $verifiedAge = 21;
-                
-            } elseif ($publicSignals[4] == "1") {
-                $verifiedAge = 18;
-
-            } elseif ($publicSignals[3] == "1") {
-                $verifiedAge = 17;
-
-            } elseif ($publicSignals[2] == "1") {
-                $verifiedAge = 16;
-
-            } elseif ($publicSignals[1] == "1") {
-                $verifiedAge = 15;
-
-            } elseif ($publicSignals[0] == "1") {
-                $verifiedAge = 14;                            
-            }            
-
-            $vage = null;
-
-            // Mininmal age request, we answer only yes / no
-
-            if ($mina !== null) {
-
-                if ($mina > $verifiedAge) {
-                    $vage = false;
-                
-                } else {
-                    $vage = true;
-                }
-            }
-            
-            if ($vage !== null) {
-                $display = $vage ? 'true' : 'false';
-            }
+                        
+            $display = $publicSignals[0] == "1" ? 'true' : 'false';
 
             $secretKey = base64_decode(env('CREDENTIALS_SECRET_KEY'));
             $publicKey = base64_decode(env('CREDENTIALS_PUBLIC_KEY'));
