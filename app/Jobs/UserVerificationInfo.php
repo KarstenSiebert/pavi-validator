@@ -14,17 +14,17 @@ class UserVerificationInfo implements ShouldQueue
     use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
 
     private string $vurl;
-    private string $user;
+    private string $code;
     private string $uuid;
     private string $creds;
 
     /**
      * Create a new job instance.
      */
-    public function __construct(string $vurl, string $user, string $uuid, string $creds)
+    public function __construct(string $vurl, string $code, string $uuid, string $creds)
     {
         $this->vurl  = $vurl;
-        $this->user  = $user;
+        $this->code  = $code;
         $this->uuid  = $uuid;
         $this->creds = $creds;
     }
@@ -39,7 +39,7 @@ class UserVerificationInfo implements ShouldQueue
                 ->timeout(10)
                 ->asJson()
                 ->post($this->vurl, [
-                    "user"   => $this->user,
+                    "code"   => $this->code,
                     "issuer" => $this->uuid,                    
                     "creds"  => $this->creds
                 ]);

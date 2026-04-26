@@ -91,8 +91,7 @@ class AgeVerificationController extends Controller
         
         $uuid = $request->header('X-Age-Verification') ?? null;        
 
-        $request->validate([
-            'user' => 'nullable|string|max:255',
+        $request->validate([            
             'vurl' => 'nullable|string|max:255',
             'code' => 'nullable|string|max:255',
             'nonce' => 'nullable|string|max:255',
@@ -100,8 +99,7 @@ class AgeVerificationController extends Controller
             'proof.proof' => 'required|array',
             'proof.publicSignals' => 'required|array'
         ]);
-        
-        $user = $request->input('user') ?? null;
+                
         $vurl = $request->input('vurl') ?? null;
         $code = $request->input('code') ?? null;
 
@@ -131,7 +129,6 @@ class AgeVerificationController extends Controller
             // none is used to avoid spoofing and middle men during app-to-app communication on mobiles
             // none gets signed and verified by the user app using the public kex of the validator
             $data = [
-                'user'  => $user,
                 'code'  => $code,
                 'show'  => $display,                
                 'nonce' => $nonce
@@ -157,7 +154,7 @@ class AgeVerificationController extends Controller
             }
             
             if (($vurl != null) && ($uuid != null) && ($creds != null)) {
-                UserVerificationInfo::dispatchSync($vurl, $user, $uuid, $creds);
+                UserVerificationInfo::dispatchSync($vurl, $code, $uuid, $creds);
             }
                          
             return response()->json(['valid' => $display, 'creds' => $creds]);
